@@ -4,56 +4,51 @@ from sklearn.linear_model import Perceptron
 from sklearn.metrics import accuracy_score
 import pandas as pd
 
-def cargar_dataset():
-    ruta_archivo = input("Ingrese la ruta del archivo del dataset: ")
+def cargar_conjunto_datos():
+    ruta_archivo = input("Ingrese la ruta del archivo del conjunto de datos: ")
     try:
-        # Cargar el conjunto de datos desde el archivo
-        dataset = pd.read_csv(ruta_archivo)
-        return dataset
+        conjunto_datos = pd.read_csv(ruta_archivo)
+        return conjunto_datos
     except FileNotFoundError:
         print("¡Archivo no encontrado! Por favor, verifique la ruta e intente nuevamente.")
         return None
 
-def generar_particiones(dataset, num_particiones, porcentaje_entrenamiento):
+def generar_particiones(conjunto_datos, num_particiones, porcentaje_entrenamiento):
     particiones = []
 
     for i in range(num_particiones):
-        # Dividir el conjunto de datos en entrenamiento y prueba
-        X_train, X_test, y_train, y_test = train_test_split(dataset.iloc[:, :-1], dataset.iloc[:, -1], 
-                                                            test_size=1 - porcentaje_entrenamiento, 
-                                                            random_state=i)
+        X_entrenamiento, X_prueba, y_entrenamiento, y_prueba = train_test_split(
+            conjunto_datos.iloc[:, :-1], conjunto_datos.iloc[:, -1],
+            test_size=1 - porcentaje_entrenamiento, 
+            random_state=i
+        )
         
-        # Crear y entrenar el perceptrón
         perceptron = Perceptron()
-        perceptron.fit(X_train, y_train)
+        perceptron.fit(X_entrenamiento, y_entrenamiento)
         
-        # Realizar predicciones en el conjunto de prueba
-        y_pred = perceptron.predict(X_test)
+        y_prediccion = perceptron.predict(X_prueba)
         
-        # Calcular la precisión y almacenar la partición
-        accuracy = accuracy_score(y_test, y_pred)
-        particion = {'X_train': X_train, 'X_test': X_test, 'y_train': y_train, 'y_test': y_test, 'accuracy': accuracy}
+        precision = accuracy_score(y_prueba, y_prediccion)
+        particion = {'X_entrenamiento': X_entrenamiento, 'X_prueba': X_prueba, 
+                     'y_entrenamiento': y_entrenamiento, 'y_prueba': y_prueba, 'precision': precision}
         particiones.append(particion)
 
     return particiones
 
-# Ejemplo de uso
-dataset = cargar_dataset()
+conjunto_datos = cargar_conjunto_datos()
 
-if dataset is not None:
-    # Parámetros
+if conjunto_datos is not None:
     num_particiones = int(input("Ingrese la cantidad de particiones: "))
     porcentaje_entrenamiento = float(input("Ingrese el porcentaje de patrones de entrenamiento (0.0 a 1.0): "))
 
-    # Generar particiones
-    particiones = generar_particiones(dataset, num_particiones, porcentaje_entrenamiento)
+    particiones = generar_particiones(conjunto_datos, num_particiones, porcentaje_entrenamiento)
 
-    # Mostrar resultados
     for i, particion in enumerate(particiones):
         print(f'Partición {i + 1}:')
-        print(f'Precisión: {particion["accuracy"]:.2f}')
-        print(f'Tamaño conjunto de entrenamiento: {len(particion["X_train"])}')
-        print(f'Tamaño conjunto de prueba: {len(particion["X_test"])}\n')
+        print(f'Precisión: {particion["precision"]:.2f}')
+        print(f'Tamaño conjunto de entrenamiento: {len(particion["X_entrenamiento"])}')
+        print(f'Tamaño conjunto de prueba: {len(particion["X_prueba"])}\n')
+
 
 
 
